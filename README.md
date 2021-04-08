@@ -24,7 +24,7 @@ cmake .
 
 ### Build
 ```
-cmake --build
+cmake --build .
 ```
 
 ### Run
