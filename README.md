@@ -31,3 +31,8 @@ cmake --build .
 ```
 ./smart-tv
 ```
+
+### If it doesn't work, try this:
+```
+https://github.com/facebook/Surround360/issues/3
+```
