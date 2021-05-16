@@ -44,12 +44,22 @@ namespace EndpointsN {
 
             // curl localhost:9080/test/stringTest
             Routes::Get(router, "/test/:var", Routes::bind(&Endpoints::getTest, this));
+
+            // curl localhost:9080/modificare-luminozitate/100
+            Routes::Get(router, "/modificare-luminozitate/:var", Routes::bind(&Endpoints::getLuminozitate, this));
+
             // curl -X POST -H "Content-Type: application/json" -d '{"id":1,"name":"test"}' localhost:9080/test
             Routes::Post(router, "/test", Routes::bind(&Endpoints::postTest, this));
+
+            // curl -X POST -H "Content-Type: application/json" -d '{"name":"modificare-luminozitate", "value":"100"}' localhost:9080/modificare-luminozitate
+            Routes::Post(router, "/modificare-luminozitate", Routes::bind(&Endpoints::postLuminozitate, this));
         }
 
         void getTest(const Rest::Request&, Http::ResponseWriter);
+        void getLuminozitate(const Rest::Request&, Http::ResponseWriter);
         void postTest(const Rest::Request&, Http::ResponseWriter);
+        void postLuminozitate(const Rest::Request&, Http::ResponseWriter);
+
     };
 
 
@@ -79,6 +89,12 @@ namespace EndpointsN {
         response.send(Http::Code::Ok, param);
     }
 
+    void Endpoints::getLuminozitate(const Rest::Request& request, Http::ResponseWriter response)
+    {
+        auto param = request.param(":var").as<string>();
+        response.send(Http::Code::Ok, param);
+    }
+
     void Endpoints::postTest(const Rest::Request& request, Http::ResponseWriter response)
     {
         json j;
@@ -92,4 +108,18 @@ namespace EndpointsN {
         j["received"] = bodyJson;
         response.send(Http::Code::Ok, j.dump());
     }
+    void Endpoints::postLuminozitate(const Rest::Request& request, Http::ResponseWriter response)
+    {
+        json j;
+        j["hardcoded"] = R"(
+            {
+                "happy": true,
+                "pi": 3.141
+            }
+        )"_json;
+        auto bodyJson = json::parse(request.body());
+        j["received"] = bodyJson;
+        response.send(Http::Code::Ok, j.dump());
+    }
+
 }
