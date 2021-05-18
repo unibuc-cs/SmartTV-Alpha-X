@@ -17,6 +17,7 @@
 using namespace std;
 using namespace Pistache;
 using namespace EndpointsN;
+using namespace SmartTvN;
 
 namespace ServerN
 {    
@@ -24,19 +25,24 @@ namespace ServerN
     {
     public:
         void init();
+        static void check_time(Endpoints *stats);
+        static void signal_wait(int s);
     };
 
+    void Server::check_time(Endpoints *stats){
+        while(stats->smartTv.getTimeFromLast()<stats->smartTv.getIdleDuration())
+        {
+        }
+    }
+
+    void Server::signal_wait(int s){
+           std::cout << std::endl << "Server closed manually" << std::endl;
+           exit(1);
+        }
+  
     void Server::init() 
     {
-        sigset_t signals;
-        if (sigemptyset(&signals) != 0
-                || sigaddset(&signals, SIGTERM) != 0
-                || sigaddset(&signals, SIGINT) != 0
-                || sigaddset(&signals, SIGHUP) != 0
-                || pthread_sigmask(SIG_BLOCK, &signals, nullptr) != 0) {
-            perror("install signal handler failed");
-            exit(1);
-        }
+        
 
         Port port(9080);
 
@@ -50,19 +56,24 @@ namespace ServerN
         Endpoints stats(addr);
 
         stats.init(thr);
+
         stats.start();
 
-        int signal = 0;
-        int status = sigwait(&signals, &signal);
-        if (status == 0)
-        {
-            std::cout << std::endl << "Server closed" << std::endl;
-        }
-        else
-        {
-            std::cerr << "sigwait returns " << status << std::endl;
-        }
+        thread t1(check_time, &stats);
+
+        int x;
+        struct sigaction sigIntHandler;
+
+        sigIntHandler.sa_handler = signal_wait;
+        sigemptyset(&sigIntHandler.sa_mask);
+        sigIntHandler.sa_flags = 0;
+
+        sigaction(SIGINT, &sigIntHandler, NULL);
+
+        t1.join();
 
         stats.stop();
+
+        std::cout << std::endl << "Server closed after too much idle time" << std::endl;
     }
 }

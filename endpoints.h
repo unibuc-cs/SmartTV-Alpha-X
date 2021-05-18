@@ -11,9 +11,11 @@
 #include <pistache/common.h>
 #include <signal.h>
 #include <nlohmann/json.hpp>
+#include "smartTv.h"
 
 using namespace std;
 using namespace Pistache;
+using namespace SmartTvN;
 using json = nlohmann::json;
 
 namespace EndpointsN {
@@ -27,6 +29,8 @@ namespace EndpointsN {
 
         std::shared_ptr<Http::Endpoint> httpEndpoint;
         Rest::Router router;
+
+        static SmartTv smartTv;
         
         explicit Endpoints(Address addr)
             : httpEndpoint(std::make_shared<Http::Endpoint>(addr))
@@ -42,28 +46,27 @@ namespace EndpointsN {
         void setupRoutes() {
             using namespace Rest;
 
-            // curl localhost:9080/test/stringTest
-            Routes::Get(router, "/test/:var", Routes::bind(&Endpoints::getTest, this));
+            // curl localhost:9080/timp-start
+            Routes::Get(router, "/timp-start", Routes::bind(&Endpoints::getTimeFromStart, this));
 
-            // curl localhost:9080/modificare-luminozitate/100
-            Routes::Get(router, "/modificare-luminozitate/:var", Routes::bind(&Endpoints::getLuminozitate, this));
+            // curl localhost:9080/timp-last
+            Routes::Get(router, "/timp-last", Routes::bind(&Endpoints::getTimeFromLast, this));
 
-            // curl -X POST -H "Content-Type: application/json" -d '{"id":1,"name":"test"}' localhost:9080/test
-            Routes::Post(router, "/test", Routes::bind(&Endpoints::postTest, this));
-
-            // curl -X POST -H "Content-Type: application/json" -d '{"name":"modificare-luminozitate", "value":"100"}' localhost:9080/modificare-luminozitate
-            Routes::Post(router, "/modificare-luminozitate", Routes::bind(&Endpoints::postLuminozitate, this));
+            // curl -X POST localhost:9080/timp-idle/20
+            Routes::Post(router, "/timp-idle/:time", Routes::bind(&Endpoints::postIdleTime, this));
+        
         }
-
-        void getTest(const Rest::Request&, Http::ResponseWriter);
-        void getLuminozitate(const Rest::Request&, Http::ResponseWriter);
-        void postTest(const Rest::Request&, Http::ResponseWriter);
-        void postLuminozitate(const Rest::Request&, Http::ResponseWriter);
+        void getTimeFromStart(const Rest::Request&, Http::ResponseWriter);
+        void getTimeFromLast(const Rest::Request&, Http::ResponseWriter);
+        void postIdleTime(const Rest::Request&, Http::ResponseWriter);
 
     };
 
 
     // IMPLEMENTATIONS
+    
+    SmartTv Endpoints::smartTv;
+
     void Endpoints::init(size_t thr = 2) 
     {
         auto opts = Http::Endpoint::options()
@@ -74,6 +77,7 @@ namespace EndpointsN {
 
     void Endpoints::start() 
     {
+        smartTv = SmartTv();
         httpEndpoint->setHandler(router.handler());
         httpEndpoint->serveThreaded();
     }
@@ -83,43 +87,35 @@ namespace EndpointsN {
         httpEndpoint->shutdown();
     }
 
-    void Endpoints::getTest(const Rest::Request& request, Http::ResponseWriter response)
+    void Endpoints::getTimeFromStart(const Rest::Request&, Http::ResponseWriter response)
     {
-        auto param = request.param(":var").as<string>();
-        response.send(Http::Code::Ok, param);
-    }
-
-    void Endpoints::getLuminozitate(const Rest::Request& request, Http::ResponseWriter response)
-    {
-        auto param = request.param(":var").as<string>();
-        response.send(Http::Code::Ok, param);
-    }
-
-    void Endpoints::postTest(const Rest::Request& request, Http::ResponseWriter response)
-    {
-        json j;
-        j["hardcoded"] = R"(
-            {
-                "happy": true,
-                "pi": 3.141
-            }
-        )"_json;
-        auto bodyJson = json::parse(request.body());
-        j["received"] = bodyJson;
+        smartTv.restartTimeFromLast();
+        response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
+        int time = smartTv.getTimeFromStart();
+        json j = {
+            {"time", time}
+        };
         response.send(Http::Code::Ok, j.dump());
     }
-    void Endpoints::postLuminozitate(const Rest::Request& request, Http::ResponseWriter response)
-    {
-        json j;
-        j["hardcoded"] = R"(
-            {
-                "happy": true,
-                "pi": 3.141
-            }
-        )"_json;
-        auto bodyJson = json::parse(request.body());
-        j["received"] = bodyJson;
+
+    void Endpoints::getTimeFromLast(const Rest::Request&, Http::ResponseWriter response)
+    {   
+        response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
+        int time = smartTv.getTimeFromLast();
+        json j = {
+            {"time", time}
+        };
         response.send(Http::Code::Ok, j.dump());
+        smartTv.restartTimeFromLast();
+    }
+
+    void Endpoints::postIdleTime(const Rest::Request& request, Http::ResponseWriter response)
+    {   
+        response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
+        auto time = request.param(":time").as<int>();
+        smartTv.restartTimeFromLast();
+        smartTv.setIdleDuration(time);
+        response.send(Http::Code::Ok);
     }
 
 }
