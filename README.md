@@ -44,6 +44,9 @@ https://github.com/facebook/Surround360/issues/3
 sudo apt-get update
 sudo apt-get install mosquitto
 sudo apt-get install mosquitto-clients
+sudo apt-get update
+sudo apt-get install libmosquitto-dev
+
 ```
 
 ### Initialize mosquitto
