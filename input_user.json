@@ -1,0 +1,39 @@
+{
+    "input_buffer":{
+        "settings":{
+            "token_delimitators":"",
+            "protocol":"HTTP",
+            "method":"POST",
+            "prefix":"localhost:9080/user",
+            "buffer-tokens":[
+                {
+                    "name": "nume",
+                    "description": "numele user-ului",
+                    "value": "",
+                    "token_type":"string",
+                    "byte_size":256,
+                    "regex-rule":"[a-zA-Z]",
+                    "optional":false
+                },
+                {
+                    "name": "varsta",
+                    "description": "varsta user-ului",
+                    "value": "",
+                    "token_type":"string",
+                    "byte_size":256,
+                    "regex-rule":"[0-9*]",
+                    "optional":false
+                },
+                {
+                    "name": "canale",
+                    "description": "lista de canale favorite",
+                    "value": "",
+                    "token_type":"string",
+                    "byte_size":256,
+                    "regex-rule":"[a-zA-Z ]*(,[a-zA-Z ] +)*",
+                    "optional":false
+                }
+            ]
+        }
+    }
+}

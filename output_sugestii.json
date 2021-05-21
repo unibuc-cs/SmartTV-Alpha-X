@@ -1,0 +1,11 @@
+{
+    "output_buffers": {
+        "byte_size": 256,
+        "description": "lista canale furnizate pe baza varstei si a genului",
+        "name": "canale",
+        "optional": false,
+        "regex-rule": "[a-zA-Z ]*(,[a-zA-Z ] +)*",
+        "token_type": "string",
+        "value": "Cartoon Network,Boomerang"
+    }
+}
