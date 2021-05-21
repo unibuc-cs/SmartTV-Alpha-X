@@ -10,6 +10,7 @@
 #include <pistache/endpoint.h>
 #include <pistache/common.h>
 #include <signal.h>
+#include <mosquitto.h>
 
 #include "endpoints.h"
 #include "server.h"
@@ -18,6 +19,7 @@ using namespace std;
 using namespace Pistache;
 using namespace EndpointsN;
 using namespace SmartTvN;
+using json = nlohmann::json;
 
 namespace ServerN
 {    
@@ -25,6 +27,8 @@ namespace ServerN
     {
     public:
         void init();
+        static void on_connect(struct mosquitto *mosq, void *obj, int rc);
+        static void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg);
         static void check_time(Endpoints *stats);
         static void signal_wait(int s);
     };
@@ -42,11 +46,9 @@ namespace ServerN
   
     void Server::init() 
     {
-        
-
         Port port(9080);
 
-        int thr = 2;
+        int thr = 2, rc, id = 12345;
 
         Address addr(Ipv4::any(), port);
 
@@ -56,6 +58,17 @@ namespace ServerN
         Endpoints stats(addr);
 
         stats.init(thr);
+
+        mosquitto_lib_init();
+	    struct mosquitto *mosq;
+        mosq = mosquitto_new("subscribe-test", true, &id);
+        mosquitto_connect_callback_set(mosq, Server::on_connect);
+        mosquitto_message_callback_set(mosq, Server::on_message);
+        rc = mosquitto_connect(mosq, "localhost", 1883, 10);
+        if(rc) {
+            std::cout << "Could not connect to Broker with return code " << rc << "\n";
+        }
+	    mosquitto_loop_start(mosq);
 
         stats.start();
 
@@ -74,6 +87,32 @@ namespace ServerN
 
         stats.stop();
 
+        mosquitto_loop_stop(mosq, true);
+        mosquitto_disconnect(mosq);
+        mosquitto_destroy(mosq);
+        mosquitto_lib_cleanup();
+
         std::cout << std::endl << "Server closed after too much idle time" << std::endl;
     }
+
+    
+    void Server::on_connect(struct mosquitto *mosq, void *obj, int rc) {
+        if(rc) {
+            std::cout << "Error with result code: " << rc <<  "\n";
+        }
+
+        // add subscription foreach route
+        mosquitto_subscribe(mosq, NULL, "test/t1", 0);
+    }
+
+    void Server::on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg) {
+        string s = (char *) msg->payload;
+        // mosquitto_pub -m "{\"id\":1,\"name\":\"test\"}" -t "test/t1"
+        std::cout << "Topic: "  << msg->topic << " Message: " << s << '\n';  
+        auto json = json::parse(s);
+        cout << "ID: " << json["id"] << " Name " << json["name"] << '\n';
+
+        // if (msg->topic === "test/t1") call method for this route
+    }
+
 }

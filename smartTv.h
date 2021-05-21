@@ -26,7 +26,7 @@ namespace SmartTvN
     private:
         time_point<high_resolution_clock> start_time;
         time_point<high_resolution_clock> last_time;
-        int idle_duration = 10;
+        int idle_duration = 10000;
 
     public:
         SmartTv();
