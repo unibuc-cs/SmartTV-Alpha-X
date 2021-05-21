@@ -1,22 +1,22 @@
 {
     "output_buffers": [
-            {
-                "byte_size": 256,
-                "description": "durata de vizionare a fiecatui canal",
-                "name": "durata",
-                "optional": false,
-                "regex-rule": "[a-zA-Z ]*(,[a-zA-Z ] +)*",
-                "token_type": "string",
-                "value": ""
-            },
-            {
-                "byte_size": 256,
-                "description": "lista canale recomandate pe baza preferintelor",
-                "name": "canale",
-                "optional": false,
-                "regex-rule": "[a-zA-Z ]*(,[a-zA-Z ] +)*",
-                "token_type": "string",
-                "value": ""
-            }
+        {
+            "byte_size": 256,
+            "description": "durata de vizionare a fiecatui canal",
+            "name": "durata",
+            "optional": false,
+            "regex-rule": "[0-9 ]*(,[0-9 ] +)*",
+            "token_type": "string",
+            "value": "Generalist:120,Muzica:300"
+        },
+        {
+            "byte_size": 256,
+            "description": "lista genuri recomandate pe baza preferintelor",
+            "name": "canale",
+            "optional": false,
+            "regex-rule": "[a-zA-Z ]*(,[a-zA-Z ] +)*",
+            "token_type": "string",
+            "value": "KissTV,ZUTV"
+        }
     ]
 }

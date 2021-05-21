@@ -6,6 +6,6 @@
         "optional": false,
         "regex-rule": "[a-zA-Z ]*(,[a-zA-Z ] +)*",
         "token_type": "string",
-        "value": "Cartoon Network,Boomerang"
+        "value": "KissTV,ZUTV"
     }
 }
