@@ -19,6 +19,73 @@ using namespace chrono;
 
 namespace SmartTvN
 {
+    class Channel{
+        private:
+            string nume;
+            string gen;
+            string intervalVarsta;
+        
+        public:
+            string getNume(){
+                return this->nume;
+            }
+
+            string getGen(){
+                return this->gen;
+            }
+
+            string getIntervalVarsta(){
+                return this->intervalVarsta;
+            }
+
+            void setNume(string nume){
+                this->nume = nume;
+            }
+
+            void setGen(string gen){
+                this->gen = gen;
+            }
+
+            void setIntervalVarsta(string interval){
+                this->intervalVarsta = interval;
+            }
+    };
+
+    class User{
+        private:
+            string username;
+            int varsta;
+            vector<Channel> listaCanale;
+        
+        public:
+            string getUsername(){
+                return this->username;
+            }
+
+            int getVarsta(){
+                return this->varsta;
+            }
+
+            vector<Channel> getListaCanale(){
+                return this->listaCanale;
+            }
+
+            void setUsername(string username){
+                this->username = username;
+            }
+
+            void setVarsta(int varsta){
+                this->varsta = varsta;
+            }
+
+            void setListaCanale(vector<Channel> canale){
+                this->listaCanale = canale;
+            }
+
+            void addChannel(Channel canal){
+                this->listaCanale.push_back(canal);
+            }
+    };
 
     class SmartTv
     {
@@ -27,6 +94,9 @@ namespace SmartTvN
         time_point<high_resolution_clock> start_time;
         time_point<high_resolution_clock> last_time;
         int idle_duration = 10000;
+        vector<User> users;
+        vector<Channel> channls;
+
 
     public:
         SmartTv();

@@ -70,13 +70,20 @@ namespace EndpointsN {
 
             // curl -X GET localhost:9080/istoric/anca
             Routes::Get(router, "/istoric/:nume", Routes::bind(&Endpoints::getRecommandations, this));
+
+            // curl -X POST localhost:9080/user/flavius/20
+            Routes::Post(router, "/user/:username/:varsta", Routes::bind(&Endpoints::insertUser, this));
+
+            Routes::Post(router, "user/:username/:canal", Routes::bind(&Endpoints::editDataUser, this));
         }
+
         void getTimeFromStart(const Rest::Request&, Http::ResponseWriter);
         void getTimeFromLast(const Rest::Request&, Http::ResponseWriter);
         void postIdleTime(const Rest::Request&, Http::ResponseWriter);
         void getChannels(const Rest::Request&, Http::ResponseWriter);
         void getRecommandations(const Rest::Request&, Http::ResponseWriter);
-
+        void insertUser(const Rest::Request&, Http::ResponseWriter);
+        void editDataUser(const Rest::Request&, Http::ResponseWriter);
     };
 
 
@@ -185,8 +192,6 @@ namespace EndpointsN {
         response.send(Http::Code::Ok, content_json.dump());
     }
 
-
-
     void Endpoints::getRecommandations(const Rest::Request& request, Http::ResponseWriter response){
         response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
         auto name = request.param(":nume").as<string>();
@@ -260,8 +265,6 @@ namespace EndpointsN {
         if (outputRecom[outputRecom.size()-1] == ','){
             outputRecom.pop_back();
         }
-          
-
 
         std::ifstream input_json("output_recomandari.json");
         json content_json;
@@ -279,4 +282,49 @@ namespace EndpointsN {
         response.send(Http::Code::Ok, content_json.dump());
     }
 
+    void Endpoints::insertUser(const Rest::Request& request, Http::ResponseWriter response){
+        response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
+        auto username = request.param(":username").as<string>();
+        auto varsta = request.param(":varsta").as<int>();
+
+        std::ofstream output_file("users.csv", std::ios_base::app | std::ios_base::out);
+        string outputData = "";
+        outputData += username;
+        outputData += ",";
+        outputData += to_string(varsta);
+        outputData += ",";
+        output_file << outputData;
+        output_file.close();
+        response.send(Http::Code::Ok, username + " a fost adaugat");
+    }
+
+    void Endpoints::editDataUser(const Rest::Request& request, Http::ResponseWriter response){
+        response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
+        auto username = request.param(":username").as<string>();
+        auto canal = request.param(":canal").as<string>();
+
+        vector<string> users;
+        std::ifstream file("users.csv");
+        std::string str;
+
+        while(std::getline(file, str)){
+            stringstream s_stream(str);
+            vector<string> result;
+            while(s_stream.good()){
+                string substr;
+                getline(s_stream, substr, ',');
+                result.push_back(substr);
+            }
+            string dataOutput = "";
+            dataOutput += username;
+            dataOutput += ",";
+            string lista = result[2];
+            if(result[0] == username){
+                lista += " ";
+                lista += canal;
+            }
+            dataOutput += lista;
+        }
+
+    }
 }
