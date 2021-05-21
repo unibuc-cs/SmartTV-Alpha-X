@@ -36,3 +36,22 @@ cmake --build .
 ```
 https://github.com/facebook/Surround360/issues/3
 ```
+
+## MQTT ##
+
+### Install 
+```
+sudo apt-get update
+sudo apt-get install mosquitto
+sudo apt-get install mosquitto-clients
+```
+
+### Initialize mosquitto
+```
+mosquitto -v
+```
+
+### Example publish subscription
+```
+mosquitto_pub -m "{\"id\":1,\"name\":\"test\"}" -t "test/t1"
+```
