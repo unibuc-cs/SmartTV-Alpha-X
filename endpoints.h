@@ -62,6 +62,9 @@ namespace EndpointsN {
             // curl localhost:9080/timp-last
             Routes::Get(router, "/timp-last", Routes::bind(&Endpoints::getTimeFromLast, this));
 
+            // curl localhost:9080/users
+            Routes::Get(router, "/users", Routes::bind(&Endpoints::getUsers, this));
+
             // curl -X POST localhost:9080/timp-idle/20
             Routes::Post(router, "/timp-idle/:time", Routes::bind(&Endpoints::postIdleTime, this));
         
@@ -75,6 +78,9 @@ namespace EndpointsN {
             Routes::Post(router, "/user/:username/:varsta", Routes::bind(&Endpoints::insertUser, this));
 
             Routes::Post(router, "user/:username/:canal", Routes::bind(&Endpoints::editDataUser, this));
+
+            // curl -X POST localhost:9080/adauga_canal/anca/KissTV
+            Routes::Post(router, "/adauga_canal/:username/:canal", Routes::bind(&Endpoints::addChannelToUser, this));
         }
 
         void getTimeFromStart(const Rest::Request&, Http::ResponseWriter);
@@ -84,6 +90,8 @@ namespace EndpointsN {
         void getRecommandations(const Rest::Request&, Http::ResponseWriter);
         void insertUser(const Rest::Request&, Http::ResponseWriter);
         void editDataUser(const Rest::Request&, Http::ResponseWriter);
+        void addChannelToUser(const Rest::Request&, Http::ResponseWriter);
+        void getUsers(const Rest::Request&, Http::ResponseWriter);
     };
 
 
@@ -147,49 +155,19 @@ namespace EndpointsN {
         auto gen = request.param(":gen").as<string>();
         auto varsta = request.param(":varsta").as<int>();
 
-        std::ifstream file("dateTV.csv");
-        std::string str;
 
-        std::string outputData = "";
-        while(std::getline(file, str)){
-            stringstream s_stream(str);
-            vector<string> result;
-            while(s_stream.good()){
-                string substr;
-                getline(s_stream, substr, ',');
-                result.push_back(substr);
-            }
-            if(result[2] == gen){
-                std::string s = result[3];
-                std::string delimiter = "-";
-                std::string first_number = s.substr(0, s.find(delimiter));
-                s.erase(0, s.find(delimiter) + delimiter.length());
-                int first_no = std::stoi(first_number);
-                int second_no = std::stoi(s);
+        vector<string> suggestions = smartTv.getSuggestions(gen, varsta);
 
-                if(varsta >= first_no && varsta <= second_no){
-                    outputData = outputData + result[1] + ",";
-                }
-            }
+        string output = "";
+        for(int i = 0; i < suggestions.size(); i++){
+            output += suggestions[i] + ',';
         }
 
-        if(outputData[outputData.size() - 1] == ','){
-            outputData.pop_back();
-        }
+        json j = {
+            {"channels", output}
+        };
+        response.send(Http::Code::Ok, j.dump());
 
-        std::ifstream input_json("output_sugestii.json");
-        json content_json;
-        input_json >> content_json;
-        auto& output = content_json["output_buffers"];
-
-        output["value"] = outputData;
-        input_json.close();
-
-        std::ofstream output_json("output_sugestii.json");
-        output_json << std::setw(4) << content_json << std::endl;
-        output_json.close();
-
-        response.send(Http::Code::Ok, content_json.dump());
     }
 
     void Endpoints::getRecommandations(const Rest::Request& request, Http::ResponseWriter response){
@@ -197,7 +175,7 @@ namespace EndpointsN {
         auto name = request.param(":nume").as<string>();
 
 
-        std::ifstream file("dateIstoricVizionari.csv");
+        /*std::ifstream file("dateIstoricVizionari.csv");
         std::string str;
 
         map<std::string, int> genre_hist;
@@ -279,7 +257,8 @@ namespace EndpointsN {
         output_json << std::setw(4) << content_json << std::endl;
         output_json.close();
 
-        response.send(Http::Code::Ok, content_json.dump());
+        response.send(Http::Code::Ok, content_json.dump());*/
+        response.send(Http::Code::Ok);
     }
 
     void Endpoints::insertUser(const Rest::Request& request, Http::ResponseWriter response){
@@ -287,15 +266,44 @@ namespace EndpointsN {
         auto username = request.param(":username").as<string>();
         auto varsta = request.param(":varsta").as<int>();
 
-        std::ofstream output_file("users.csv", std::ios_base::app | std::ios_base::out);
-        string outputData = "";
-        outputData += username;
-        outputData += ",";
-        outputData += to_string(varsta);
-        outputData += ",";
-        output_file << outputData;
-        output_file.close();
-        response.send(Http::Code::Ok, username + " a fost adaugat");
+        smartTv.add_user(username, varsta);
+
+        response.send(Http::Code::Ok);
+    }
+
+
+    void Endpoints::getUsers(const Rest::Request& request, Http::ResponseWriter response){
+        response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
+
+        vector<User*> users = smartTv.getUsers();
+        json json_array = json::array();
+        for(int i = 0; i < users.size(); i++){
+            vector<Channel*> channels = users[i]->getListaCanale();
+
+            string canale = "";
+            for(int j = 0; j < channels.size(); j++){
+                canale += channels[i]->getNume() + ",";
+            }
+            json j = {
+                {"nume", users[i]->getUsername()},
+                {"varsta", users[i]->getVarsta()},
+                {"channels", canale}
+            };
+            json_array.push_back(j);
+        }
+
+        response.send(Http::Code::Ok, json_array.dump());
+    }
+
+
+    void Endpoints::addChannelToUser(const Rest::Request& request, Http::ResponseWriter response){
+        response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
+        auto username = request.param(":username").as<string>();
+        auto canal = request.param(":canal").as<string>();
+
+
+        smartTv.add_channel_to_user(username, canal);
+        response.send(Http::Code::Ok);
     }
 
     void Endpoints::editDataUser(const Rest::Request& request, Http::ResponseWriter response){
