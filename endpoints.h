@@ -81,6 +81,9 @@ namespace EndpointsN {
 
             // curl -X POST localhost:9080/adauga_canal/anca/KissTV
             Routes::Post(router, "/adauga_canal/:username/:canal", Routes::bind(&Endpoints::addChannelToUser, this));
+
+            // curl -X POST localhost:9080/set_brightness/20
+            Routes::Post(router, "/set_brightness/:level", Routes::bind(&Endpoints::setBrightness, this));
         }
 
         void getTimeFromStart(const Rest::Request&, Http::ResponseWriter);
@@ -92,6 +95,10 @@ namespace EndpointsN {
         void editDataUser(const Rest::Request&, Http::ResponseWriter);
         void addChannelToUser(const Rest::Request&, Http::ResponseWriter);
         void getUsers(const Rest::Request&, Http::ResponseWriter);
+
+        void setBrightness(const Rest::Request&, Http::ResponseWriter);
+
+
     };
 
 
@@ -259,6 +266,19 @@ namespace EndpointsN {
             }
             dataOutput += lista;
         }
-
+    }
+    
+    
+    void Endpoints::setBrightness(const Rest::Request& request, Http::ResponseWriter response)
+    {   
+        response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
+        auto level = request.param(":level").as<int>();
+        
+        smartTv.setBrightness(level);
+         json j = {
+            {"new_brightness", smartTv.getBrightness()}
+        };
+        response.send(Http::Code::Ok, j.dump());
+     
     }
 }
