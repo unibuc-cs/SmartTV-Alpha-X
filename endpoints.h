@@ -56,44 +56,42 @@ namespace EndpointsN {
         void setupRoutes() {
             using namespace Rest;
 
-            // curl localhost:9080/timp-start
+            // curl localhost:9080/timp-start - to be renamed
             Routes::Get(router, "/timp-start", Routes::bind(&Endpoints::getTimeFromStart, this));
 
-            // curl localhost:9080/timp-last
+            // curl localhost:9080/timp-last - to be renamed
             Routes::Get(router, "/timp-last", Routes::bind(&Endpoints::getTimeFromLast, this));
 
-            // curl localhost:9080/users
-            Routes::Get(router, "/users", Routes::bind(&Endpoints::getUsers, this));
+            // curl localhost:9080/getUsers
+            Routes::Get(router, "/getUsers", Routes::bind(&Endpoints::getUsers, this));
 
-            // curl -X POST localhost:9080/timp-idle/20
+            // curl -X POST localhost:9080/timp-idle/20 - to be renamed
             Routes::Post(router, "/timp-idle/:time", Routes::bind(&Endpoints::postIdleTime, this));
         
-            // curl -X GET localhost:9080/sugestii/Muzica/20
-            Routes::Get(router, "/sugestii/:gen/:varsta", Routes::bind(&Endpoints::getChannels, this));
+            // curl -X GET localhost:9080/getSuggestedChannels/Muzica/20
+            Routes::Get(router, "/getSuggestedChannels/:gen/:varsta", Routes::bind(&Endpoints::getChannels, this));
 
-            // curl -X GET localhost:9080/istoric/anca
-            Routes::Get(router, "/istoric/:nume", Routes::bind(&Endpoints::getRecommandations, this));
+            // curl -X GET localhost:9080/getHistoryAndRecommandations/anca
+            Routes::Get(router, "/getHistoryAndRecommandations/:nume", Routes::bind(&Endpoints::getHistoryAndRecommandations, this));
 
-            // curl -X POST localhost:9080/user/flavius/20
-            Routes::Post(router, "/user/:username/:varsta", Routes::bind(&Endpoints::insertUser, this));
+            // curl -X POST localhost:9080/insertUser/flavius/20
+            Routes::Post(router, "/insertUser/:username/:varsta", Routes::bind(&Endpoints::insertUser, this));
 
-            Routes::Post(router, "user/:username/:canal", Routes::bind(&Endpoints::editDataUser, this));
+            // curl -X POST localhost:9080/addChannel/anca/KissTV
+            Routes::Post(router, "/addChannel/:username/:canal", Routes::bind(&Endpoints::addChannelToUser, this));
 
-            // curl -X POST localhost:9080/adauga_canal/anca/KissTV
-            Routes::Post(router, "/adauga_canal/:username/:canal", Routes::bind(&Endpoints::addChannelToUser, this));
+            // curl -X POST localhost:9080/setBrightness/20
+            Routes::Post(router, "/setBrightness/:level", Routes::bind(&Endpoints::setBrightness, this));
 
-            // curl -X POST localhost:9080/set_brightness/20
-            Routes::Post(router, "/set_brightness/:level", Routes::bind(&Endpoints::setBrightness, this));
-
-            //curl -X GET localhost:9080/notification_distance/75/1.75
-            Routes::Get(router,"/notification_distance/:size/:current_distance", Routes::bind(&Endpoints::setNotification, this) );
+            //curl -X GET localhost:9080/notificationDistance/75/1.75
+            Routes::Get(router,"/notificationDistance/:size/:current_distance", Routes::bind(&Endpoints::setNotification, this) );
         }
 
         void getTimeFromStart(const Rest::Request&, Http::ResponseWriter);
         void getTimeFromLast(const Rest::Request&, Http::ResponseWriter);
         void postIdleTime(const Rest::Request&, Http::ResponseWriter);
         void getChannels(const Rest::Request&, Http::ResponseWriter);
-        void getRecommandations(const Rest::Request&, Http::ResponseWriter);
+        void getHistoryAndRecommandations(const Rest::Request&, Http::ResponseWriter);
         void insertUser(const Rest::Request&, Http::ResponseWriter);
         void editDataUser(const Rest::Request&, Http::ResponseWriter);
         void addChannelToUser(const Rest::Request&, Http::ResponseWriter);
@@ -181,7 +179,7 @@ namespace EndpointsN {
 
     }
 
-    void Endpoints::getRecommandations(const Rest::Request& request, Http::ResponseWriter response){
+    void Endpoints::getHistoryAndRecommandations(const Rest::Request& request, Http::ResponseWriter response){
         response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
         auto name = request.param(":nume").as<string>();
 
@@ -203,9 +201,20 @@ namespace EndpointsN {
         auto username = request.param(":username").as<string>();
         auto varsta = request.param(":varsta").as<int>();
 
-        smartTv.add_user(username, varsta);
+        vector<User*> users = smartTv.getUsers();
+        int ok = 0;
+        for(int i  = 0; i < users.size(); i++){
+            if(username == users[i]->getUsername()){
+                response.send(Http::Code::Bad_Request, "Utilizatorul exista deja");
+                ok = 1;
+            }
+        }
 
-        response.send(Http::Code::Ok);
+        if(ok == 0){
+            smartTv.add_user(username, varsta);
+            response.send(Http::Code::Ok);
+        }
+
     }
 
 
