@@ -203,14 +203,19 @@ namespace SmartTvN
         }
 
         vector<std::pair<std::string, std::string>> new_rec;
+        std::ofstream file("text.out");
+
 
         for(int i = 0; i < genre_vec.size(); i++){
             for(int j = 0; j < all_channels.size(); j++){
-                if (genre_vec[i] == all_channels[i]->getGen()){
-                    new_rec.push_back(make_pair(all_channels[i]->getGen(), all_channels[i]->getNume()));
+                file << all_channels[j]->getGen() << " ";
+                if (genre_vec[i] == all_channels[j]->getGen()){
+                    new_rec.push_back(make_pair(all_channels[j]->getGen(), all_channels[j]->getNume()));
                 }
             }
         }
+
+        file.close();
 
         return new_rec;
 
@@ -297,6 +302,7 @@ namespace SmartTvN
             channels.push_back(new_channel);
             
         }
+
 
         this->all_channels = channels;
         file.close();

@@ -175,90 +175,16 @@ namespace EndpointsN {
         auto name = request.param(":nume").as<string>();
 
 
-        /*std::ifstream file("dateIstoricVizionari.csv");
-        std::string str;
+        map<std::string, int> genres_user = smartTv.getGenres(name);
 
-        map<std::string, int> genre_hist;
-        while(std::getline(file, str)){
-            stringstream s_stream(str);
-            vector<string> result;
-            while(s_stream.good()){
-                string substr;
-                getline(s_stream, substr, ',');
-                result.push_back(substr);
-            }
-            if(result[0] == name){
-                std::string genre = result[2];
-                int time = std::stoi(result[3]);
+        vector<std::pair<std::string, std::string>> genres_rec = smartTv.getGenRec(name);
 
-                if (genre_hist.find(genre) != genre_hist.end()){
-                    genre_hist[genre] += time;
-                }
-                else{
-                    genre_hist[genre] = time;
-                }
-                
-            }
-        }
+        json j = {
+            {"istoric", genres_user},
+            {"canale recomandate", genres_rec}
+        };
+        response.send(Http::Code::Ok, j.dump());
 
-        map<string, int>::iterator it;
-
-        string outputGenrehist = "";
-        vector<string>genre_vec;
-
-        for(it = genre_hist.begin(); it != genre_hist.end(); it++){
-            auto genre = it->first;
-            auto time = it->second;
-
-            if (time > threshold_TIME){
-                genre_vec.push_back(genre);
-
-            }
-            outputGenrehist = outputGenrehist + genre + ":" + to_string(time) + ",";
-        }
-
-
-        if (outputGenrehist[outputGenrehist.size() - 1] == ','){
-            outputGenrehist.pop_back();
-        }
-
-
-        std::ifstream file1("dateTV.csv");
-
-        std::string outputRecom = "";
-        while(std::getline(file1, str)){
-            stringstream s_stream(str);
-            vector<string> result;
-            while(s_stream.good()){
-                string substr;
-                getline(s_stream, substr, ',');
-                result.push_back(substr);
-            }
-            std::string gen = result[2];
-            if(std::find(genre_vec.begin(), genre_vec.end(), gen) != genre_vec.end()){
-                outputRecom = outputRecom + result[1] + ",";
-            }
-        }
-
-        if (outputRecom[outputRecom.size()-1] == ','){
-            outputRecom.pop_back();
-        }
-
-        std::ifstream input_json("output_recomandari.json");
-        json content_json;
-        input_json >> content_json;
-        auto& output = content_json["output_buffers"];
-
-        output[0]["value"] = outputGenrehist;
-        output[1]["value"] = outputRecom;
-        input_json.close();
-
-        std::ofstream output_json("output_recomandari.json");
-        output_json << std::setw(4) << content_json << std::endl;
-        output_json.close();
-
-        response.send(Http::Code::Ok, content_json.dump());*/
-        response.send(Http::Code::Ok);
     }
 
     void Endpoints::insertUser(const Rest::Request& request, Http::ResponseWriter response){
