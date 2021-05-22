@@ -79,6 +79,7 @@ namespace SmartTvN
             User(string nume, int varsta){
                 this->username = nume;
                 this->varsta = varsta;
+                this->listaCanale = vector<Channel*>();
             }
 
             string getUsername(){
@@ -151,12 +152,14 @@ namespace SmartTvN
 
     public:
         SmartTv();
+        ~SmartTv();
         int getTimeFromStart();
         int getTimeFromLast();
         int getIdleDuration();
         void restartTimeFromLast();
         void setIdleDuration(int idle_duration);
         void add_channels();
+        void add_users();
         vector<string> getSuggestions(string gen, int varsta);
         void add_user(string nume, int varsta);
         vector<User*> getUsers();
@@ -169,6 +172,7 @@ namespace SmartTvN
         int getBrightness();
         void setBrightness(int outside_brighness);
         string notifyUserDistance(int size, float current_distance);
+        void write_users();
 
 
     };
@@ -178,6 +182,28 @@ namespace SmartTvN
         return this->all_channels;
     }
 
+    void SmartTv::write_users(){
+        std::ofstream file("accounts.csv");
+        for(int i = 0; i < users.size(); i++){
+            file << users[i]->getUsername() << "," << users[i]->getVarsta();
+            if(users[i]->getListaCanale().size()){
+                file << ",";
+                string output = "";
+                for(int j = 0; j < users[i]->getListaCanale().size(); j++){
+                    output = output + users[i]->getListaCanale()[j]->getNume() + ";";
+                }
+
+                output.pop_back();
+                file << output << "\n";
+            }
+        }
+
+        file.close();
+    }
+
+    SmartTv::~SmartTv(){
+        this->write_users();
+    }
     
     map<std::string, int> SmartTv::getGenres(string nume){
 
@@ -214,19 +240,16 @@ namespace SmartTvN
         }
 
         vector<std::pair<std::string, std::string>> new_rec;
-        std::ofstream file("text.out");
 
 
         for(int i = 0; i < genre_vec.size(); i++){
             for(int j = 0; j < all_channels.size(); j++){
-                file << all_channels[j]->getGen() << " ";
                 if (genre_vec[i] == all_channels[j]->getGen()){
                     new_rec.push_back(make_pair(all_channels[j]->getGen(), all_channels[j]->getNume()));
                 }
             }
         }
 
-        file.close();
 
         return new_rec;
 
@@ -318,6 +341,49 @@ namespace SmartTvN
         this->all_channels = channels;
         file.close();
     }
+
+    void SmartTv::add_users(){
+        std::ifstream file("accounts.csv");
+        std::string str;
+
+        vector<User*> new_users;
+        while(std::getline(file, str)){
+            stringstream s_stream(str);
+            vector<string> result;
+            while(s_stream.good()){
+                string substr;
+                getline(s_stream, substr, ',');
+                result.push_back(substr);
+            }
+
+            std::string nume = result[0];
+            int varsta = std::stoi(result[1]);
+
+            User *new_user = new User(nume, varsta);
+
+            if(result.size() == 3){
+
+                std::string listChannelsstring = result[2];
+                stringstream s_stream1(listChannelsstring);
+                while(s_stream1.good()){
+                    string canal;
+                    getline(s_stream1, canal, ';');
+
+
+                    new_user->addChannel(this->getChannel(canal));
+
+
+                }
+            }
+            this->users.push_back(new_user);
+            
+        }
+
+        file.close();
+    }
+
+
+
 
     vector<string> SmartTv::getSuggestions(string gen, int varsta){
         vector<string> suggestions;
@@ -414,6 +480,7 @@ namespace SmartTvN
         last_time = high_resolution_clock::now();
         this->add_channels();
         this->add_rec();
+        this->add_users();
     }
 
 

@@ -239,9 +239,9 @@ namespace EndpointsN {
         for(int i = 0; i < users.size(); i++){
             vector<Channel*> channels = users[i]->getListaCanale();
 
-            string canale = "";
+            vector<string>canale;
             for(int j = 0; j < channels.size(); j++){
-                canale += channels[i]->getNume() + ",";
+                canale.push_back(channels[j]->getNume());
             }
             json j = {
                 {"nume", users[i]->getUsername()},
