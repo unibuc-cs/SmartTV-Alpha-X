@@ -147,6 +147,7 @@ namespace SmartTvN
         vector<Channel*> all_channels;
         vector<User*> users;
         vector<Recommandation*> rec;
+        int brightness = 100;
 
     public:
         SmartTv();
@@ -164,10 +165,13 @@ namespace SmartTvN
         void add_rec();
         map<std::string, int> getGenres(string nume);
         vector<std::pair<std::string, std::string>> getGenRec(string nume);
+        int getBrightness();
+        void setBrightness(int outside_brigthness);
 
 
     };
 
+    
     map<std::string, int> SmartTv::getGenres(string nume){
 
         map<std::string, int> genre_hist;
@@ -346,6 +350,30 @@ namespace SmartTvN
     {
         return idle_duration;
     }
+    void SmartTv::setBrightness(int outside_brightness){
+       
+        if(outside_brightness < 25){
+            this->brightness = 25;
+           
+        }
+        else if(outside_brightness >=25  && outside_brightness < 50){
+            this->brightness = 50;
+            
+        }
+        else if(outside_brightness >=50  && outside_brightness < 75){
+            this->brightness = 75;
+          
+        }
+        else if(outside_brightness >=75  && outside_brightness < 100){
+            this->brightness = 100;
+           
+        }
+       
+    }
+    int SmartTv::getBrightness(){
+        return brightness;
+    }
+
 
     SmartTv::SmartTv()
     {
