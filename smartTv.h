@@ -152,7 +152,7 @@ namespace SmartTvN
     public:
         SmartTv();
         int getTimeFromStart();
-        int getTimeFromLast();
+        int gtetTimeFromLast();
         int getIdleDuration();
         void restartTimeFromLast();
         void setIdleDuration(int idle_duration);
@@ -166,7 +166,8 @@ namespace SmartTvN
         map<std::string, int> getGenres(string nume);
         vector<std::pair<std::string, std::string>> getGenRec(string nume);
         int getBrightness();
-        void setBrightness(int outside_brigthness);
+        void setBrightness(int outside_brighness);
+        string notifyUserDistance(int size, float current_distance);
 
 
     };
@@ -374,6 +375,32 @@ namespace SmartTvN
         return brightness;
     }
 
+    string SmartTv::notifyUserDistance(int size, float current_distance){
+        string message = "You are ok.";
+
+        if(size <=80){
+            if(current_distance < 1.5){
+                message = "You are too close. You need to between 1.5 and 2.5 m away from the tv for your given tv size."
+            }
+        }
+        else if(size > 80 && size <= 107){
+            if(current_distance < 2.5){
+                message = "You are too close. You need to be between 2.5 and 3.5 m away from the tv for your given tv size."
+            }
+        }
+        else if( size > 107 && size <= 120){
+            if(current_distance < 3.5){
+                message = "You are too close. You need to be between 3.5 and 4.5 m away from the tv for your given tv size."
+            }
+        }
+         else if( size > 120){
+            if(current_distance < 5){
+                message = "You are too close. You need to beat least 5 m away from the tv for your given tv size."
+            }
+        }
+        return message;
+    }
+
 
     SmartTv::SmartTv()
     {
@@ -382,5 +409,7 @@ namespace SmartTvN
         this->add_channels();
         this->add_rec();
     }
+
+
 
 }
