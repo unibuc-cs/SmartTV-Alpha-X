@@ -160,6 +160,7 @@ namespace SmartTvN
         vector<string> getSuggestions(string gen, int varsta);
         void add_user(string nume, int varsta);
         vector<User*> getUsers();
+        vector<Channel*>getChannels();
         void add_channel_to_user(string nume, string canal);
         Channel* getChannel(string nume);
         void add_rec();
@@ -171,6 +172,11 @@ namespace SmartTvN
 
 
     };
+
+
+    vector<Channel*> SmartTv::getChannels(){
+        return this->all_channels;
+    }
 
     
     map<std::string, int> SmartTv::getGenres(string nume){
