@@ -186,13 +186,26 @@ namespace EndpointsN {
 
         map<std::string, int> genres_user = smartTv.getGenres(name);
 
-        vector<std::pair<std::string, std::string>> genres_rec = smartTv.getGenRec(name);
+        vector<User*> users = smartTv.getUsers();
+        bool ok = 0;
+        for(int i  = 0; i < users.size(); i++){
+            if(name == users[i]->getUsername()){
+                ok = 1;
+            }
+        }
 
-        json j = {
-            {"istoric", genres_user},
-            {"canale recomandate", genres_rec}
-        };
-        response.send(Http::Code::Ok, j.dump());
+        if(ok == 0){
+            response.send(Http::Code::Bad_Request, "The user does not exist.");
+        }else{
+            vector<std::pair<std::string, std::string>> genres_rec = smartTv.getGenRec(name);
+
+            json j = {
+                {"genre history", genres_user},
+                {"recommanded channels", genres_rec}
+            };
+            response.send(Http::Code::Ok, j.dump());
+
+        }
 
     }
 
@@ -256,10 +269,6 @@ namespace EndpointsN {
                 pos_user = i;
             }
         }
-
-        std::ofstream file("text.out");
-        file << exist_user;
-        file.close();
 
         if(exist_user == 0){
             response.send(Http::Code::Bad_Request, "The user does not exist.");
