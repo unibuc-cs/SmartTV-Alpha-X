@@ -85,7 +85,7 @@ namespace EndpointsN {
             // curl -X POST localhost:9080/set_brightness/20
             Routes::Post(router, "/set_brightness/:level", Routes::bind(&Endpoints::setBrightness, this));
 
-            //curl -X POST localhost:9080/notification_distance/75/1.75
+            //curl -X GET localhost:9080/notification_distance/75/1.75
             Routes::Get(router,"/notification_distance/:size/:current_distance", Routes::bind(&Endpoints::setNotification, this) );
         }
 
@@ -294,6 +294,7 @@ namespace EndpointsN {
             auto current_distance = request.param(":current_distance").as<float>();
             
             string message = smartTv.notifyUserDistance(size, current_distance);
+         
             json j = {
                 {"notification_message", message}
             };
