@@ -84,6 +84,9 @@ namespace EndpointsN {
 
             // curl -X POST localhost:9080/set_brightness/20
             Routes::Post(router, "/set_brightness/:level", Routes::bind(&Endpoints::setBrightness, this));
+
+            //curl -X POST localhost:9080/notification_distance/75/1.75
+            Routes::Get(router,"/notification_distance/:size/:current_distance", Routes::bind(&Endpoints::setNotification, this) );
         }
 
         void getTimeFromStart(const Rest::Request&, Http::ResponseWriter);
@@ -97,6 +100,7 @@ namespace EndpointsN {
         void getUsers(const Rest::Request&, Http::ResponseWriter);
 
         void setBrightness(const Rest::Request&, Http::ResponseWriter);
+        void setNotification(const Rest::Request&, Http::ResponseWriter);
 
 
     };
@@ -281,4 +285,20 @@ namespace EndpointsN {
         response.send(Http::Code::Ok, j.dump());
      
     }
+
+
+    void Endpoints::setNotification(const Rest::Request& request, Http::ResponseWriter response)
+        {   
+            response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
+            auto size = request.param(":size").as<int>();
+            auto current_distance = request.param(":current_distance").as<float>();
+            
+            string message = smartTv.notifyUserDistance(size, current_distance);
+            json j = {
+                {"notification_message", message}
+            };
+            response.send(Http::Code::Ok, j.dump());
+        
+        }
+
 }
