@@ -167,13 +167,13 @@ namespace EndpointsN {
 
         vector<string> suggestions = smartTv.getSuggestions(gen, varsta);
 
-        string output = "";
+        /*string output = "";
         for(int i = 0; i < suggestions.size(); i++){
             output += suggestions[i] + ',';
-        }
+        }*/
 
         json j = {
-            {"channels", output}
+            {"channels", suggestions}
         };
         response.send(Http::Code::Ok, j.dump());
 
