@@ -427,7 +427,6 @@ namespace SmartTvN
        
         if(outside_brightness < 25){
             this->brightness = 25;
-           
         }
         else if(outside_brightness >=25  && outside_brightness < 50){
             this->brightness = 50;

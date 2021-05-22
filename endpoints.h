@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 
+#pragma comment(lib,winmm.lib)
 #include <pistache/net.h>
 #include <pistache/http.h>
 #include <pistache/peer.h>
@@ -32,7 +33,7 @@ namespace EndpointsN {
 
     class Endpoints {
     public:
-    
+        string a;
         using Lock = std::mutex;
         using Guard = std::lock_guard<Lock>;
         Lock lock;
@@ -99,8 +100,6 @@ namespace EndpointsN {
 
         void setBrightness(const Rest::Request&, Http::ResponseWriter);
         void setNotification(const Rest::Request&, Http::ResponseWriter);
-
-
     };
 
 
@@ -167,13 +166,13 @@ namespace EndpointsN {
 
         vector<string> suggestions = smartTv.getSuggestions(gen, varsta);
 
-        /*string output = "";
+        string output = "";
         for(int i = 0; i < suggestions.size(); i++){
             output += suggestions[i] + ',';
-        }*/
+        }
 
         json j = {
-            {"channels", suggestions}
+            {"channels", output}
         };
         response.send(Http::Code::Ok, j.dump());
 
@@ -186,26 +185,13 @@ namespace EndpointsN {
 
         map<std::string, int> genres_user = smartTv.getGenres(name);
 
-        vector<User*> users = smartTv.getUsers();
-        bool ok = 0;
-        for(int i  = 0; i < users.size(); i++){
-            if(name == users[i]->getUsername()){
-                ok = 1;
-            }
-        }
+        vector<std::pair<std::string, std::string>> genres_rec = smartTv.getGenRec(name);
 
-        if(ok == 0){
-            response.send(Http::Code::Bad_Request, "The user does not exist.");
-        }else{
-            vector<std::pair<std::string, std::string>> genres_rec = smartTv.getGenRec(name);
-
-            json j = {
-                {"genre history", genres_user},
-                {"recommanded channels", genres_rec}
-            };
-            response.send(Http::Code::Ok, j.dump());
-
-        }
+        json j = {
+            {"istoric", genres_user},
+            {"canale recomandate", genres_rec}
+        };
+        response.send(Http::Code::Ok, j.dump());
 
     }
 
@@ -215,10 +201,10 @@ namespace EndpointsN {
         auto varsta = request.param(":varsta").as<int>();
 
         vector<User*> users = smartTv.getUsers();
-        bool ok = 0;
+        int ok = 0;
         for(int i  = 0; i < users.size(); i++){
             if(username == users[i]->getUsername()){
-                response.send(Http::Code::Bad_Request, "The user already added.");
+                response.send(Http::Code::Bad_Request, "Utilizatorul exista deja");
                 ok = 1;
             }
         }
@@ -239,9 +225,9 @@ namespace EndpointsN {
         for(int i = 0; i < users.size(); i++){
             vector<Channel*> channels = users[i]->getListaCanale();
 
-            vector<string>canale;
+            string canale = "";
             for(int j = 0; j < channels.size(); j++){
-                canale.push_back(channels[j]->getNume());
+                canale += channels[i]->getNume() + ",";
             }
             json j = {
                 {"nume", users[i]->getUsername()},
@@ -260,50 +246,39 @@ namespace EndpointsN {
         auto username = request.param(":username").as<string>();
         auto canal = request.param(":canal").as<string>();
 
-        vector<User*> users = smartTv.getUsers();
-        bool exist_user = 0;
-        int pos_user = -1;
-        for(int i  = 0; i < users.size(); i++){
-            if(username == users[i]->getUsername()){
-                exist_user = 1;
-                pos_user = i;
-            }
-        }
 
-        if(exist_user == 0){
-            response.send(Http::Code::Bad_Request, "The user does not exist.");
-        }
-
-        bool exist_channel = 0;
-        vector<Channel*> channels = smartTv.getChannels();
-        for(int i = 0; i < channels.size(); i++){
-            if(canal == channels[i]->getNume()){
-                exist_channel = 1;
-            }
-        }
-
-        if(exist_channel == 0){
-            response.send(Http::Code::Bad_Request, "The channel does not exist.");
-        }
-
-        if(exist_user){
-            vector<Channel*> channels_user = users[pos_user]->getListaCanale();
-            bool channel_added = 0;
-            for(int i = 0; i < channels_user.size(); i++){
-                if(channels_user[i]->getNume() == canal){
-                    response.send(Http::Code::Bad_Request, "The channel was already added to user's channel list.");
-                    channel_added = 1;
-                }
-            }
-            if (channel_added == 0){
-                smartTv.add_channel_to_user(username, canal);
-                response.send(Http::Code::Ok);
-            }
-        }
-
+        smartTv.add_channel_to_user(username, canal);
+        response.send(Http::Code::Ok);
     }
 
-    
+    void Endpoints::editDataUser(const Rest::Request& request, Http::ResponseWriter response){
+        response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
+        auto username = request.param(":username").as<string>();
+        auto canal = request.param(":canal").as<string>();
+
+        vector<string> users;
+        std::ifstream file("users.csv");
+        std::string str;
+
+        while(std::getline(file, str)){
+            stringstream s_stream(str);
+            vector<string> result;
+            while(s_stream.good()){
+                string substr;
+                getline(s_stream, substr, ',');
+                result.push_back(substr);
+            }
+            string dataOutput = "";
+            dataOutput += username;
+            dataOutput += ",";
+            string lista = result[2];
+            if(result[0] == username){
+                lista += " ";
+                lista += canal;
+            }
+            dataOutput += lista;
+        }
+    }
     
     void Endpoints::setBrightness(const Rest::Request& request, Http::ResponseWriter response)
     {   
@@ -317,7 +292,6 @@ namespace EndpointsN {
         response.send(Http::Code::Ok, j.dump());
      
     }
-
 
     void Endpoints::setNotification(const Rest::Request& request, Http::ResponseWriter response)
         {   
