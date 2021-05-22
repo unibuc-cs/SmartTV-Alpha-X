@@ -284,12 +284,18 @@ namespace EndpointsN {
     {   
         response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
         auto level = request.param(":level").as<int>();
-        
-        smartTv.setBrightness(level);
+        if(level < 0 || level > 100){
+            response.send(Http::Code::Bad_Request, "The brigthness should be between 1 and 100");
+        }
+        else{
+            smartTv.setBrightness(level);
          json j = {
             {"new_brightness", smartTv.getBrightness()}
         };
         response.send(Http::Code::Ok, j.dump());
+        }
+        
+       
      
     }
 

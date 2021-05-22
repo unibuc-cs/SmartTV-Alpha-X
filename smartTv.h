@@ -15,6 +15,7 @@
 #include <fstream>
 #include <set>
 #include <map>
+#include <time.h>
 
 using namespace std;
 using namespace Pistache;
@@ -424,7 +425,16 @@ namespace SmartTvN
         return idle_duration;
     }
     void SmartTv::setBrightness(int outside_brightness){
-       
+
+        time_t theTime = time(NULL);
+        struct tm *aTime = localtime(&theTime);
+
+        int day = aTime->tm_mday;
+        int month = aTime->tm_mon + 1; // Month is 0 – 11, add 1 to get a jan-dec 1-12 concept
+        int year = aTime->tm_year + 1900; // Year is # years since 1900
+        int hour=aTime->tm_hour;
+        int min=aTime->tm_min;
+        if(hour > 8 && hour < 17){
         if(outside_brightness < 25){
             this->brightness = 25;
         }
@@ -440,6 +450,26 @@ namespace SmartTvN
             this->brightness = 100;
            
         }
+        }
+        else{
+              if(outside_brightness < 25){
+            this->brightness = 5;
+           
+        }
+        else if(outside_brightness >=25  && outside_brightness < 50){
+            this->brightness = 30;
+            
+        }
+        else if(outside_brightness >=50  && outside_brightness < 75){
+            this->brightness = 55;
+          
+        }
+        else if(outside_brightness >=75  && outside_brightness < 100){
+            this->brightness = 80;
+           
+        }
+        }
+      
        
     }
     int SmartTv::getBrightness(){
