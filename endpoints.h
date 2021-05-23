@@ -63,7 +63,7 @@ namespace EndpointsN {
             // curl localhost:9080/timp-last - to be renamed
             Routes::Get(router, "/timp-last", Routes::bind(&Endpoints::getTimeFromLast, this));
 
-            // curl localhost:9080/getUsers
+            // curl localhost:9080/getUsers X
             Routes::Get(router, "/getUsers", Routes::bind(&Endpoints::getUsers, this));
 
             // curl -X POST localhost:9080/timp-idle/20 - to be renamed
@@ -72,10 +72,10 @@ namespace EndpointsN {
             // curl -X GET localhost:9080/getSuggestedChannels/Muzica/20
             Routes::Get(router, "/getSuggestedChannels/:gen/:varsta", Routes::bind(&Endpoints::getChannels, this));
 
-            // curl -X GET localhost:9080/getHistoryAndRecommandations/anca
+            // curl -X GET localhost:9080/getHistoryAndRecommandations/anca x
             Routes::Get(router, "/getHistoryAndRecommandations/:nume", Routes::bind(&Endpoints::getHistoryAndRecommandations, this));
 
-            // curl -X POST localhost:9080/insertUser/flavius/20
+            // curl -X POST localhost:9080/insertUser/flavius/20 
             Routes::Post(router, "/insertUser/:username/:varsta", Routes::bind(&Endpoints::insertUser, this));
 
             // curl -X POST localhost:9080/addChannel/anca/KissTV
@@ -97,7 +97,7 @@ namespace EndpointsN {
         void editDataUser(const Rest::Request&, Http::ResponseWriter);
         void addChannelToUser(const Rest::Request&, Http::ResponseWriter);
         void getUsers(const Rest::Request&, Http::ResponseWriter);
-
+        
         void setBrightness(const Rest::Request&, Http::ResponseWriter);
         void setNotification(const Rest::Request&, Http::ResponseWriter);
     };
@@ -163,7 +163,6 @@ namespace EndpointsN {
         auto gen = request.param(":gen").as<string>();
         auto varsta = request.param(":varsta").as<int>();
 
-
         vector<string> suggestions = smartTv.getSuggestions(gen, varsta);
 
         string output = "";
@@ -181,7 +180,6 @@ namespace EndpointsN {
     void Endpoints::getHistoryAndRecommandations(const Rest::Request& request, Http::ResponseWriter response){
         response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
         auto name = request.param(":nume").as<string>();
-
 
         map<std::string, int> genres_user = smartTv.getGenres(name);
 
@@ -236,10 +234,9 @@ namespace EndpointsN {
             };
             json_array.push_back(j);
         }
-
+        
         response.send(Http::Code::Ok, json_array.dump());
     }
-
 
     void Endpoints::addChannelToUser(const Rest::Request& request, Http::ResponseWriter response){
         response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
@@ -285,7 +282,7 @@ namespace EndpointsN {
         response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
         auto level = request.param(":level").as<int>();
         if(level < 0 || level > 100){
-            response.send(Http::Code::Bad_Request, "The brigthness should be between 1 and 100");
+            response.send(Http::Code::Bad_Request, "The brigthness should be between 0 and 100");
         }
         else{
             smartTv.setBrightness(level);

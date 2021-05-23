@@ -51,7 +51,6 @@ namespace ServerN
         int thr = 2, rc, id = 12345;
 
         Address addr(Ipv4::any(), port);
-
         cout << "Server starting ... " << endl;
         cout << "Server run on localhost:9080 " << endl;
 
@@ -103,16 +102,68 @@ namespace ServerN
 
         // add subscription foreach route
         mosquitto_subscribe(mosq, NULL, "test/t1", 0);
+        // mosquitto_pub -m " " -t "getUsers"
+        mosquitto_subscribe(mosq, NULL, "getUsers", 0);
+        // mosquitto_pub -m "{\"name\":\"anca\"}" -t "getHistoryAndRecommandations"
+        mosquitto_subscribe(mosq, NULL, "getHistoryAndRecommandations", 0);
+        // mosquitto_pub -m "{\"gen\":\"Generalist\",\"varsta\":20}" -t "getSuggestedChannels"
+        mosquitto_subscribe(mosq, NULL, "getSuggestedChannels", 0);
     }
 
     void Server::on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg) {
         string s = (char *) msg->payload;
-        // mosquitto_pub -m "{\"id\":1,\"name\":\"test\"}" -t "test/t1"
-        std::cout << "Topic: "  << msg->topic << " Message: " << s << '\n';  
-        auto json = json::parse(s);
-        cout << "ID: " << json["id"] << " Name " << json["name"] << '\n';
+        // mosquitto_pub -m "{\"id\":1,\"name\":\"test\"}" -t "getUsers"
+        //std::cout << "Topic: "  << msg->topic << " Message: " << s << '\n';  
+        string topic = msg->topic;
+        vector<string> mqttFuncVector = {string("getUsers"), string("getHistoryAndRecommandations"), string("getSuggestedChannels")};
+        if (topic == mqttFuncVector[0]){
+            vector<User*> users = Endpoints::smartTv.getUsers();
+            json json_array = json::array();
+            for(int i = 0; i < users.size(); i++){
+                vector<Channel*> channels = users[i]->getListaCanale();
 
-        // if (msg->topic === "test/t1") call method for this route
+                string canale = "";
+                for(int j = 0; j < channels.size(); j++){
+                    canale += channels[i]->getNume() + ",";
+                }
+                json j = {
+                    {"nume", users[i]->getUsername()},
+                    {"varsta", users[i]->getVarsta()},
+                    {"channels", canale}
+                };
+                json_array.push_back(j);
+
+                cout<<json_array<<'\n';
+            }
+        }
+        
+        if (topic == mqttFuncVector[1]){
+            json j = json::parse(s);
+            map<std::string, int> genres_user = Endpoints::smartTv.getGenres(j["name"]);
+
+            vector<std::pair<std::string, std::string>> genres_rec = Endpoints::smartTv.getGenRec(j["name"]);
+
+            json out = {
+                {"istoric", genres_user},
+                {"canale recomandate", genres_rec}
+            };
+            cout << out << '\n';
+        }
+        
+        if (topic == mqttFuncVector[2]){
+            json j = json::parse(s);
+
+            vector<string> suggestions = Endpoints::smartTv.getSuggestions(j["gen"], j["varsta"]);
+
+            string output = "";
+            for(int i = 0; i < suggestions.size(); i++){
+                output += suggestions[i] + ',';
+            }
+
+            json out = {
+                {"channels", output}
+            };
+            cout << out << '\n';
+        }
     }
-
 }
