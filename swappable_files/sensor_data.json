@@ -4,33 +4,33 @@
             "token_delimitators":"",
             "protocol":"HTTP",
             "method":"POST",
-            "prefix":"localhost:9080/user",
+            "prefix":"localhost:9080/sensor",
             "buffer-tokens":[
                 {
-                    "name": "nume",
-                    "description": "numele user-ului",
-                    "value": "",
+                    "name": "luminosity",
+                    "description": "Sensor that gives luminosity",
+                    "value": "90",
                     "token_type":"string",
                     "byte_size":256,
                     "regex-rule":"[a-zA-Z]",
                     "optional":false
                 },
                 {
-                    "name": "varsta",
-                    "description": "varsta user-ului",
-                    "value": "",
+                    "name": "distance",
+                    "description": "Sensor that gives distance from the TV",
+                    "value": "90",
                     "token_type":"string",
                     "byte_size":256,
-                    "regex-rule":"[0-9*]",
+                    "regex-rule":"[a-zA-Z]",
                     "optional":false
                 },
                 {
-                    "name": "canale",
-                    "description": "lista de canale favorite",
-                    "value": "",
+                    "name": "temperature",
+                    "description": "Sensor that gives temperature",
+                    "value": "2",
                     "token_type":"string",
                     "byte_size":256,
-                    "regex-rule":"[a-zA-Z ]*(,[a-zA-Z ] +)*",
+                    "regex-rule":"[a-zA-Z]",
                     "optional":false
                 }
             ]

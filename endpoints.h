@@ -57,14 +57,17 @@ namespace EndpointsN {
         void setupRoutes() {
             using namespace Rest;
 
-            // curl localhost:9080/timp-start - to be renamed
+            // curl localhost:9080/timp-start 
             Routes::Get(router, "/timp-start", Routes::bind(&Endpoints::getTimeFromStart, this));
 
-            // curl localhost:9080/timp-last - to be renamed
+            // curl localhost:9080/timp-last 
             Routes::Get(router, "/timp-last", Routes::bind(&Endpoints::getTimeFromLast, this));
 
-            // curl localhost:9080/getUsers X
+            // curl localhost:9080/getUsers 
             Routes::Get(router, "/getUsers", Routes::bind(&Endpoints::getUsers, this));
+
+            // curl localhost:9080/getUsersJSON
+            Routes::Get(router, "/getUsersJSON", Routes::bind(&Endpoints::getUsersJSON, this));
 
             // curl -X POST localhost:9080/timp-idle/20 - to be renamed
             Routes::Post(router, "/timp-idle/:time", Routes::bind(&Endpoints::postIdleTime, this));
@@ -86,6 +89,13 @@ namespace EndpointsN {
 
             //curl -X GET localhost:9080/notificationDistance/75/1.75
             Routes::Get(router,"/notificationDistance/:size/:current_distance", Routes::bind(&Endpoints::setNotification, this) );
+
+            // curl -X POST localhost:9080/setBrightnessSensor
+            Routes::Post(router, "/setBrightnessSensor", Routes::bind(&Endpoints::setBrightnessSensor, this));
+
+            // curl -X POST localhost:9080/setBrightnessOurSensor
+            Routes::Post(router, "/setBrightnessOurSensor", Routes::bind(&Endpoints::setBrightnessOurSensor, this));
+        
         }
 
         void getTimeFromStart(const Rest::Request&, Http::ResponseWriter);
@@ -94,11 +104,13 @@ namespace EndpointsN {
         void getChannels(const Rest::Request&, Http::ResponseWriter);
         void getHistoryAndRecommandations(const Rest::Request&, Http::ResponseWriter);
         void insertUser(const Rest::Request&, Http::ResponseWriter);
-        void editDataUser(const Rest::Request&, Http::ResponseWriter);
+        
         void addChannelToUser(const Rest::Request&, Http::ResponseWriter);
         void getUsers(const Rest::Request&, Http::ResponseWriter);
-        
+        void getUsersJSON(const Rest::Request&, Http::ResponseWriter);
         void setBrightness(const Rest::Request&, Http::ResponseWriter);
+        void setBrightnessSensor(const Rest::Request&, Http::ResponseWriter);
+        void setBrightnessOurSensor(const Rest::Request&, Http::ResponseWriter);
         void setNotification(const Rest::Request&, Http::ResponseWriter);
     };
 
@@ -214,7 +226,6 @@ namespace EndpointsN {
 
     }
 
-
     void Endpoints::getUsers(const Rest::Request& request, Http::ResponseWriter response){
         response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
 
@@ -234,8 +245,32 @@ namespace EndpointsN {
             };
             json_array.push_back(j);
         }
-        
+
         response.send(Http::Code::Ok, json_array.dump());
+    }
+
+    void Endpoints::getUsersJSON(const Rest::Request& request, Http::ResponseWriter response){
+        vector<User*> users = smartTv.getUsers();
+        json json_array = json::array();
+        for(int i = 0; i < users.size(); i++){
+            vector<Channel*> channels = users[i]->getListaCanale();
+
+            string canale = "";
+            for(int j = 0; j < channels.size(); j++){
+                canale += channels[i]->getNume() + ",";
+            }
+            json j = {
+                {"nume", users[i]->getUsername()},
+                {"varsta", users[i]->getVarsta()},
+                {"channels", canale}
+            };
+            json_array.push_back(j);
+        }
+
+        std :: ofstream output_json("output_files/output_users.json");
+        output_json << std::setw(4) << json_array << std :: endl;
+        output_json.close();
+        response.send(Http::Code::Ok, "Data was loaded");
     }
 
     void Endpoints::addChannelToUser(const Rest::Request& request, Http::ResponseWriter response){
@@ -246,35 +281,6 @@ namespace EndpointsN {
 
         smartTv.add_channel_to_user(username, canal);
         response.send(Http::Code::Ok);
-    }
-
-    void Endpoints::editDataUser(const Rest::Request& request, Http::ResponseWriter response){
-        response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
-        auto username = request.param(":username").as<string>();
-        auto canal = request.param(":canal").as<string>();
-
-        vector<string> users;
-        std::ifstream file("users.csv");
-        std::string str;
-
-        while(std::getline(file, str)){
-            stringstream s_stream(str);
-            vector<string> result;
-            while(s_stream.good()){
-                string substr;
-                getline(s_stream, substr, ',');
-                result.push_back(substr);
-            }
-            string dataOutput = "";
-            dataOutput += username;
-            dataOutput += ",";
-            string lista = result[2];
-            if(result[0] == username){
-                lista += " ";
-                lista += canal;
-            }
-            dataOutput += lista;
-        }
     }
     
     void Endpoints::setBrightness(const Rest::Request& request, Http::ResponseWriter response)
@@ -291,9 +297,48 @@ namespace EndpointsN {
         };
         response.send(Http::Code::Ok, j.dump());
         }
-        
-       
-     
+    }
+
+    void Endpoints::setBrightnessSensor(const Rest::Request& request, Http::ResponseWriter response)
+    {   
+        std::ifstream input_json("swappable_files/window_settings.json");
+        json content_json;
+        input_json >> content_json;
+        auto& output = content_json["input_buffers"]["settings"]["buffer-tokens"];
+        input_json.close();
+        string value = output[4]["value"];
+        int level = stoi(value);
+        if(level < 0 || level > 100){
+            response.send(Http::Code::Bad_Request, "The brigthness should be between 0 and 100");
+        }
+        else{
+            smartTv.setBrightness(level);
+            json j = {
+                {"new_brightness", smartTv.getBrightness()}
+            };
+            response.send(Http::Code::Ok, j.dump());
+        }
+    }
+
+    void Endpoints::setBrightnessOurSensor(const Rest::Request& request, Http::ResponseWriter response)
+    {   
+        std::ifstream input_json("swappable_files/sensor_data.json");
+        json content_json;
+        input_json >> content_json;
+        auto& output = content_json["input_buffer"]["settings"]["buffer-tokens"];
+        input_json.close();
+        string value = output[0]["value"];
+        int level = stoi(value);
+        if(level < 0 || level > 100){
+            response.send(Http::Code::Bad_Request, "The brigthness should be between 0 and 100");
+        }
+        else{
+            smartTv.setBrightness(level);
+            json j = {
+                {"new_brightness", smartTv.getBrightness()}
+            };
+            response.send(Http::Code::Ok, j.dump());
+        }
     }
 
     void Endpoints::setNotification(const Rest::Request& request, Http::ResponseWriter response)

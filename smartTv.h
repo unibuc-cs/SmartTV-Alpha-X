@@ -184,7 +184,7 @@ namespace SmartTvN
     }
 
     void SmartTv::write_users(){
-        std::ofstream file("accounts.csv");
+        std::ofstream file("data_files/accounts.csv");
         for(int i = 0; i < users.size(); i++){
             file << users[i]->getUsername() << "," << users[i]->getVarsta();
             if(users[i]->getListaCanale().size()){
@@ -257,7 +257,7 @@ namespace SmartTvN
     }
 
     void SmartTv::add_rec(){
-        std::ifstream file("dateIstoricVizionari.csv");
+        std::ifstream file("data_files/dateIstoricVizionari.csv");
         std::string str;
 
         vector<Recommandation*> rec_array;
@@ -310,7 +310,7 @@ namespace SmartTvN
     }
 
     void SmartTv::add_channels(){
-        std::ifstream file("dateTV.csv");
+        std::ifstream file("data_files/dateTV.csv");
         std::string str;
 
         vector<Channel*> channels;
@@ -344,7 +344,7 @@ namespace SmartTvN
     }
 
     void SmartTv::add_users(){
-        std::ifstream file("accounts.csv");
+        std::ifstream file("data_files/accounts.csv");
         std::string str;
 
         vector<User*> new_users;
@@ -384,8 +384,6 @@ namespace SmartTvN
     }
 
 
-
-
     vector<string> SmartTv::getSuggestions(string gen, int varsta){
         vector<string> suggestions;
         for(int i = 0; i < all_channels.size(); i++){
@@ -396,8 +394,6 @@ namespace SmartTvN
 
         return suggestions;
     }
-
-
 
     // get the time (in seconds) since the TV has started
     int SmartTv::getTimeFromStart()
@@ -420,58 +416,51 @@ namespace SmartTvN
     {
         this->idle_duration = idle_duration;
     }
+    
     int SmartTv::getIdleDuration()
     {
         return idle_duration;
     }
+    
     void SmartTv::setBrightness(int outside_brightness){
 
         time_t theTime = time(NULL);
         struct tm *aTime = localtime(&theTime);
 
-        int day = aTime->tm_mday;
-        int month = aTime->tm_mon + 1; // Month is 0 – 11, add 1 to get a jan-dec 1-12 concept
-        int year = aTime->tm_year + 1900; // Year is # years since 1900
         int hour=aTime->tm_hour;
-        int min=aTime->tm_min;
         if(hour > 8 && hour < 17){
-        if(outside_brightness < 25){
-            this->brightness = 25;
-        }
-        else if(outside_brightness >=25  && outside_brightness < 50){
-            this->brightness = 50;
+            if(outside_brightness < 25){
+                this->brightness = 25;
+            }
+            else if(outside_brightness >=25  && outside_brightness < 50){
+                this->brightness = 50;
+            }
+            else if(outside_brightness >=50  && outside_brightness < 75){
+                this->brightness = 75;
             
-        }
-        else if(outside_brightness >=50  && outside_brightness < 75){
-            this->brightness = 75;
-          
-        }
-        else if(outside_brightness >=75  && outside_brightness < 100){
-            this->brightness = 100;
-           
-        }
+            }
+            else if(outside_brightness >=75  && outside_brightness < 100){
+                this->brightness = 100;
+            }
         }
         else{
-              if(outside_brightness < 25){
-            this->brightness = 5;
-           
-        }
-        else if(outside_brightness >=25  && outside_brightness < 50){
-            this->brightness = 30;
-            
-        }
-        else if(outside_brightness >=50  && outside_brightness < 75){
-            this->brightness = 55;
-          
-        }
-        else if(outside_brightness >=75  && outside_brightness < 100){
-            this->brightness = 80;
-           
-        }
+            if(outside_brightness < 25){
+                this->brightness = 5;
+            }
+            else if(outside_brightness >=25  && outside_brightness < 50){
+                this->brightness = 30;
+            }
+            else if(outside_brightness >=50  && outside_brightness < 75){
+                this->brightness = 55;
+            }
+            else if(outside_brightness >=75  && outside_brightness < 100){
+                this->brightness = 80;
+            }
         }
       
        
     }
+    
     int SmartTv::getBrightness(){
         return brightness;
     }
@@ -502,7 +491,6 @@ namespace SmartTvN
         return message;
     }
 
-
     SmartTv::SmartTv()
     {
         start_time = high_resolution_clock::now();
@@ -511,7 +499,4 @@ namespace SmartTvN
         this->add_rec();
         this->add_users();
     }
-
-
-
 }
