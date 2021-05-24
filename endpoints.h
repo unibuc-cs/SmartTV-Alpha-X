@@ -20,12 +20,13 @@
 #include <iostream>
 #include <iomanip>
 #include <map>
+#include <mutex>
 
 using namespace std;
 using namespace Pistache;
 using namespace SmartTvN;
 using json = nlohmann::json;
-
+std::mutex m;
 
 const int threshold_TIME = 120;
 
@@ -165,8 +166,10 @@ namespace EndpointsN {
     {   
         response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
         auto time = request.param(":time").as<int>();
+        m.lock();
         smartTv.restartTimeFromLast();
         smartTv.setIdleDuration(time);
+        m.unlock();
         response.send(Http::Code::Ok);
     }
 
