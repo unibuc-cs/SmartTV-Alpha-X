@@ -171,6 +171,7 @@ namespace EndpointsN {
     }
 
     void Endpoints::getChannels(const Rest::Request& request, Http::ResponseWriter response){
+        smartTv.restartTimeFromLast();
         response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
         auto gen = request.param(":gen").as<string>();
         auto varsta = request.param(":varsta").as<int>();
@@ -190,6 +191,7 @@ namespace EndpointsN {
     }
 
     void Endpoints::getHistoryAndRecommandations(const Rest::Request& request, Http::ResponseWriter response){
+        smartTv.restartTimeFromLast();
         response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
         auto name = request.param(":nume").as<string>();
 
@@ -206,6 +208,7 @@ namespace EndpointsN {
     }
 
     void Endpoints::insertUser(const Rest::Request& request, Http::ResponseWriter response){
+        smartTv.restartTimeFromLast();
         response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
         auto username = request.param(":username").as<string>();
         auto varsta = request.param(":varsta").as<int>();
@@ -227,6 +230,7 @@ namespace EndpointsN {
     }
 
     void Endpoints::getUsers(const Rest::Request& request, Http::ResponseWriter response){
+        smartTv.restartTimeFromLast();
         response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
 
         vector<User*> users = smartTv.getUsers();
@@ -250,6 +254,7 @@ namespace EndpointsN {
     }
 
     void Endpoints::getUsersJSON(const Rest::Request& request, Http::ResponseWriter response){
+        smartTv.restartTimeFromLast();
         vector<User*> users = smartTv.getUsers();
         json json_array = json::array();
         for(int i = 0; i < users.size(); i++){
@@ -274,6 +279,7 @@ namespace EndpointsN {
     }
 
     void Endpoints::addChannelToUser(const Rest::Request& request, Http::ResponseWriter response){
+        smartTv.restartTimeFromLast();
         response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
         auto username = request.param(":username").as<string>();
         auto canal = request.param(":canal").as<string>();
@@ -285,6 +291,7 @@ namespace EndpointsN {
     
     void Endpoints::setBrightness(const Rest::Request& request, Http::ResponseWriter response)
     {   
+        smartTv.restartTimeFromLast();
         response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
         auto level = request.param(":level").as<int>();
         if(level < 0 || level > 100){
@@ -301,6 +308,7 @@ namespace EndpointsN {
 
     void Endpoints::setBrightnessSensor(const Rest::Request& request, Http::ResponseWriter response)
     {   
+        smartTv.restartTimeFromLast();
         std::ifstream input_json("swappable_files/window_settings.json");
         json content_json;
         input_json >> content_json;
@@ -322,6 +330,7 @@ namespace EndpointsN {
 
     void Endpoints::setBrightnessOurSensor(const Rest::Request& request, Http::ResponseWriter response)
     {   
+        smartTv.restartTimeFromLast();
         std::ifstream input_json("swappable_files/sensor_data.json");
         json content_json;
         input_json >> content_json;
@@ -343,6 +352,7 @@ namespace EndpointsN {
 
     void Endpoints::setNotification(const Rest::Request& request, Http::ResponseWriter response)
         {   
+            smartTv.restartTimeFromLast();
             response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
             auto size = request.param(":size").as<int>();
             auto current_distance = request.param(":current_distance").as<float>();
