@@ -1,7 +1,7 @@
 {
     "device-name": "SmartTV-Alpha-X",
     "device-type": "TV",
-    "buffers-count": 1,
+    "buffers-count": 9,
     "input-buffers":{
         "timp-idle": {
             "token_delimitators": "",
