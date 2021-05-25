@@ -41,6 +41,29 @@
                 }
             ]
         },
+        "getSuggestedChannelsMQTT": {
+            "token_delimitators": "",
+            "protocol": "MQTT",
+            "prefix": "mosquitto_pub -m \"{\"gen\":\"Generalist\",\"varsta\":20}\" -t \"getSuggestedChannels\"",
+            "buffer-tokens": [
+                {
+                    "name": "Channel genre",
+                    "description": "A type of channel genre in order to get suggested channels by genre",
+                    "token_type": "string",
+                    "byte_size": 256,
+                    "regex-rule": "[a-zA-Z ]*",
+                    "optional": false
+                },
+                {
+                    "name": "Age",
+                    "description": "The age of user in order to get suggested channels by age",
+                    "token_type": "string",
+                    "byte_size": 256,
+                    "regex-rule": "[0-9]*",
+                    "optional": false
+                }
+            ]
+        },
         "insertUser": {
             "token_delimitators": "",
             "protocol": "HTTP",
