@@ -18,7 +18,9 @@ WORKDIR /app
 RUN cmake . && cmake --build . && chmod 755 ./smart-tv
 
 # Run
+COPY ./delay.sh /delay.sh
+RUN chmod 755 /delay.sh
 EXPOSE 9080
 RUN useradd -m dorel
 USER dorel
-CMD ["./smart-tv"]
+CMD ["/delay.sh", "1", "./smart-tv"]

@@ -63,7 +63,7 @@ namespace ServerN
         mosq = mosquitto_new("subscribe-test", true, &id);
         mosquitto_connect_callback_set(mosq, Server::on_connect);
         mosquitto_message_callback_set(mosq, Server::on_message);
-        rc = mosquitto_connect(mosq, "localhost", 1883, 10);
+        rc = mosquitto_connect(mosq, "mosquitto_connect", 1883, 10);
         if(rc) {
             std::cout << "Could not connect to Broker with return code " << rc << "\n";
         }
