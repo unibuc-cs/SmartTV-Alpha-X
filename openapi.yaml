@@ -1,0 +1,80 @@
+openapi: 3.0.0
+info:
+  title: SmartTV-Alpha
+  version: 1.0.0
+servers:
+  - url: http://localhost:9080
+    description: Docker container exposed on localhost with default port.
+paths:
+  /timp-start:
+    get:
+      responses:
+        '200':
+          description: Time from start.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  time:
+                    type: number
+  /timp-last:
+    get:
+      responses:
+        '200':
+          description: Something
+  /getUsers:
+    get:
+      responses:
+        '200':
+          description: Something
+  /getUsersJSON:
+    get:
+      responses:
+        '200':
+          description: Something
+  /timp-idle/:time:
+    post:
+      responses:
+        '200':
+          description: Something
+  /getSuggestedChannels/:gen/:varsta:
+    get:
+      responses:
+        '200':
+          description: Something
+  /getHistoryAndRecommandations/:nume:
+    get:
+      responses:
+        '200':
+          description: Something
+  /insertUser/:username/:varsta:
+    post:
+      responses:
+        '200':
+          description: Something
+  /addChannel/:username/:canal:
+    post:
+      responses:
+        '200':
+          description: Something
+  /setBrightness/:level:
+    post:
+      responses:
+        '200':
+          description: Something
+  /notificationDistance/:size/:current_distance:
+    get:
+      responses:
+        '200':
+          description: Something
+  /setBrightnessSensor:
+    post:
+      responses:
+        '200':
+          description: Something
+  /setBrightnessOurSensor:
+    post:
+      responses:
+        '200':
+          description: Something
