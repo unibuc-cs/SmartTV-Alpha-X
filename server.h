@@ -14,6 +14,7 @@
 
 #include "endpoints.h"
 #include "server.h"
+#include <time.h>
 
 using namespace std;
 using namespace Pistache;
@@ -34,8 +35,10 @@ namespace ServerN
     };
 
     void Server::check_time(Endpoints *stats){
+        // This infinite loop is using 100% of CPU
         while(stats->smartTv.getTimeFromLast()<stats->smartTv.getIdleDuration())
         {
+            sleep(1);
         }
     }
 
